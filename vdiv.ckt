@@ -1,0 +1,5 @@
+* Voltage divider circuit
+V1 0 1 12
+R1 1 2 100
+R2 2 0 200
+.end
