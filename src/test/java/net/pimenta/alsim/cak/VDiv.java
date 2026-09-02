@@ -1,6 +1,6 @@
 package net.pimenta.alsim.cak;
 
-import net.pimenta.alsim.math.Vector;
+import net.pimenta.alsim.util.Vector;
 
 public class VDiv {
 

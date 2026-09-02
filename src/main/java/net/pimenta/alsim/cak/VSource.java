@@ -1,7 +1,7 @@
 package net.pimenta.alsim.cak;
 
 public class VSource extends Component{
-    private double V;
+    private final double V;
 
     public VSource(String id, Node neg, Node pos, double V){
         super(id,neg,pos);

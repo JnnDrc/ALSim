@@ -1,4 +1,4 @@
-package net.pimenta.alsim.math;
+package net.pimenta.alsim.util;
 
 public class Vector {
     private final double[]    data;

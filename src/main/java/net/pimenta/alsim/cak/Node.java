@@ -2,7 +2,7 @@ package net.pimenta.alsim.cak;
 
 public class Node {
     private int id;
-    Node(int id){
+    public Node(int id){
         this.id = id;
     }
     int getId(){

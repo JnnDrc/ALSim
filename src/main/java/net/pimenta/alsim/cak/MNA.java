@@ -1,9 +1,9 @@
 package net.pimenta.alsim.cak;
 
-import net.pimenta.alsim.math.GaussJordanSolver;
-import net.pimenta.alsim.math.LinearSolver;
-import net.pimenta.alsim.math.Matrix;
-import net.pimenta.alsim.math.Vector;
+import net.pimenta.alsim.util.GaussJordanSolver;
+import net.pimenta.alsim.util.LinearSolver;
+import net.pimenta.alsim.util.Matrix;
+import net.pimenta.alsim.util.Vector;
 
 public class MNA {
     private final Matrix A;

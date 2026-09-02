@@ -1,30 +1,29 @@
 package net.pimenta.alsim.cak;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 public class NetlistParser {
-    public Circuit parse(Path path) throws RuntimeException{
-            List<String> lines;
-        try{
-            lines = Files.readAllLines(path);
-        }
-        catch (IOException e){
-            throw new RuntimeException("Failed to read netlist '" + path.toString() +"';\n+" + e.getMessage());
-        }
+
+    public Circuit parse(Reader reader) throws RuntimeException, IOException {
+        BufferedReader buffered = new BufferedReader(reader);
 
         Circuit circuit = new Circuit(new Node(0));
 
-        for(String line : lines){
+        String line;
+
+        while((line = buffered.readLine()) != null) {
             line = line.trim();
             if(line.isEmpty()) continue;
             if(line.charAt(0) == '*') continue;
 
             if(line.equals(".end")) break;
 
-            String[] tokens = line.split(" ");
+            String[] tokens = line.split("\\s+");
             String id = tokens[0];
             char type = Character.toUpperCase(id.charAt(0));
 
@@ -46,8 +45,15 @@ public class NetlistParser {
                     break;
             }
         }
-
         return circuit;
+    }
+
+    public Circuit parse(Path path) throws IOException{
+        return parse(Files.newBufferedReader(path));
+    }
+
+    public Circuit parse(String string) throws IOException{
+        return parse(new StringReader(string));
     }
 
     double parseValue(String text){
