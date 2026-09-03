@@ -8,6 +8,10 @@ public class Resistor extends Component{
         this.R = R;
     }
 
+    public double getR() {
+        return R;
+    }
+
     @Override
     public void stamp(MNA mna) {
         Node a = nodes.get(0);

@@ -38,7 +38,7 @@ public class CircuitCanvas extends Canvas {
 
     private void mouseClicked(MouseEvent event){
         requestFocus();
-        editor.mouseClicked(event.getX(),event.getY());
+        editor.mouseClicked(event.getButton(),event.getClickCount(),event.getX(),event.getY());
         draw();
     }
     private void mouseMoved(MouseEvent event){
@@ -51,7 +51,7 @@ public class CircuitCanvas extends Canvas {
         draw();
     }
 
-    private void KeyPressed(KeyEvent event){
+    private void KeyPressed(KeyEvent event) {
         switch (event.getCode()){
             case R -> editor.setResistorTool();
             case V -> editor.setVSourceTool();
@@ -62,7 +62,7 @@ public class CircuitCanvas extends Canvas {
                 try{
                     NetlistGenerator.generate(editor, Path.of("netlist.ckt"));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("Failed to generate netlist\n"+e.getMessage());
                 }
             }
         }
@@ -82,10 +82,10 @@ public class CircuitCanvas extends Canvas {
         gc.setStroke(Color.BLACK);
         double w = getWidth();
         double h = getHeight();
-        for(int x = 0; x < w; x+= editor.GRID_SIZE){
+        for(double x = 0; x < w; x+= editor.GRID_SIZE){
           gc.strokeLine(x,0,x,h);
         }
-        for(int y = 0; y < h; y+= editor.GRID_SIZE){
+        for(double y = 0; y < h; y+= editor.GRID_SIZE){
             gc.strokeLine(0,y,w,y);
 
         }

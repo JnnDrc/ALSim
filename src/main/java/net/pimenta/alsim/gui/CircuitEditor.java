@@ -9,6 +9,7 @@ import net.pimenta.alsim.gui.elements.GraphicElement;
 import net.pimenta.alsim.gui.elements.GraphicNode;
 import net.pimenta.alsim.gui.elements.GraphicWire;
 import net.pimenta.alsim.gui.tools.*;
+import net.pimenta.alsim.gui.ui.PropertiesDialog;
 import net.pimenta.alsim.util.Pair;
 
 import java.awt.*;
@@ -16,8 +17,8 @@ import java.util.*;
 import java.util.List;
 
 public class CircuitEditor {
-    public  static final double GRID_SIZE   = 50;
-    private static final double SNAP_RADIUS = 25;
+    public  final double GRID_SIZE   = 50;
+    private final double SNAP_RADIUS = 25;
 
     private static final Tool resistorTool = new ResistorTool();
     private static final Tool vsourceTool  = new VSourceTool();
@@ -50,12 +51,13 @@ public class CircuitEditor {
         tool = wireTool;
     }
     public void setSelectTool() {
+        tool.cancel(this);
         tool = selectTool;
         selected.clear();
     }
 
-    public void mouseClicked(double x, double y){
-        tool.mouseClicked(this,snap(x),snap(y));
+    public void mouseClicked(MouseButton button, int clickCount, double x, double y){
+        tool.mouseClicked(this,button, clickCount, snap(x),snap(y));
     }
 
     public void mouseMoved(double x, double y){
@@ -81,7 +83,6 @@ public class CircuitEditor {
     }
 
     public GraphicNode findOrCreateNode(double x, double y){
-
         for (GraphicNode node : nodes){
             if(node.distTo(x,y) < SNAP_RADIUS){
                 System.out.println("Node selected");
@@ -207,4 +208,7 @@ public class CircuitEditor {
         return null;
     }
 
+    public void editProperties(GraphicElement selected) {
+        PropertiesDialog.show(selected);
+    }
 }

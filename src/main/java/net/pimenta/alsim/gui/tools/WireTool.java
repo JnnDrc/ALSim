@@ -9,7 +9,7 @@ import net.pimenta.alsim.gui.elements.GraphicWire;
 public class WireTool implements Tool {
     private GraphicNode first;
     @Override
-    public void mouseClicked(CircuitEditor editor, double x, double y) {
+    public void mouseClicked(CircuitEditor editor,MouseButton button, int clickCount, double x, double y) {
         GraphicNode node = editor.findOrCreateNode(x,y);
         if (first == null) first = node;
         else{

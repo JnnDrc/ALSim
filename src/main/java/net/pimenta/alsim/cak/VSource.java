@@ -8,6 +8,10 @@ public class VSource extends Component{
         this.V = V;
     }
 
+    public double getV() {
+        return V;
+    }
+
     @Override
     public int extraVars(){
         return 1;

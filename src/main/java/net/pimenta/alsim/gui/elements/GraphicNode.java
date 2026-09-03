@@ -31,9 +31,6 @@ public class GraphicNode extends GraphicElement{
         return x * x;
     }
 
-    public double distTo(GraphicNode other){
-        return Math.sqrt(sqr(this.x - other.x) + sqr(this.y - other.y));
-    }
 
     public double distTo(double x, double y){
         return Math.sqrt(sqr(this.x - x) + sqr(this.y - y));

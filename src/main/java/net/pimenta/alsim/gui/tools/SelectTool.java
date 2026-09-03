@@ -27,15 +27,16 @@ public class SelectTool implements Tool{
 
 
     @Override
-    public void mouseClicked(CircuitEditor editor, double x, double y) {
-//        GraphicElement ge = editor.findElementAt(x,y);
-//        if(ge != null){
-//            editor.setSelected(ge);
-//            System.out.println("Selected!");
-//        }
-//        else{
-//            editor.clearSelection();
-//        }
+    public void mouseClicked(CircuitEditor editor,MouseButton button, int clickCount, double x, double y) {
+        if(clickCount >= 2){
+            GraphicElement selected = editor.findElementAt(x,y);
+
+            if(selected != null){
+                editor.clearSelection();
+                editor.addSelected(selected);
+                editor.editProperties(selected);
+            }
+        }
     }
 
     @Override
