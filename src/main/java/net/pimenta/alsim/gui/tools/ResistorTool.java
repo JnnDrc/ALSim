@@ -7,14 +7,17 @@ import net.pimenta.alsim.gui.elements.GraphicResistor;
 
 public class ResistorTool implements Tool{
     private GraphicNode first;
+    private int resistorCount = 1;
     @Override
     public void mouseClicked(CircuitEditor editor,MouseButton button, int clickCount, double x, double y) {
           GraphicNode node = editor.findOrCreateNode(x,y);
           if (first == null) first = node;
           else{
-            editor.addComponent(new GraphicResistor(first,node));
-            first = null;
-            editor.clearPreview();
+              editor.addNode(first);
+              editor.addNode(node);
+              editor.addComponent(new GraphicResistor("R" + resistorCount++,first,node));
+              first = null;
+              editor.clearPreview();
         }
     }
 
@@ -26,7 +29,7 @@ public class ResistorTool implements Tool{
 
         GraphicNode cursor = new GraphicNode(-1, x, y);
 
-        editor.setPreview(new GraphicResistor(first, cursor));
+        editor.setPreview(new GraphicResistor("__RPREVIEW__",first, cursor));
     }
 
     @Override

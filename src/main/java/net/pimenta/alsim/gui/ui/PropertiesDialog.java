@@ -10,6 +10,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import net.pimenta.alsim.gui.elements.GraphicElement;
+import net.pimenta.alsim.gui.elements.GraphicNode;
 import net.pimenta.alsim.gui.elements.GraphicResistor;
 import net.pimenta.alsim.gui.elements.GraphicVSource;
 
@@ -19,8 +20,40 @@ public class PropertiesDialog {
         switch (ge){
             case GraphicResistor resistor -> showResistor(resistor);
             case GraphicVSource  vsource  -> showVSource(vsource);
+            case GraphicNode     node     -> showNode(node);
             default -> throw new IllegalStateException("Unexpected value: " + ge);
         }
+    }
+
+    private static void showNode(GraphicNode node) {
+        Stage stage = new Stage();
+
+        stage.setTitle("Properties");
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        Label idLabel = new Label("Name:");
+        TextField idField = new TextField(node.getLabel());
+        HBox idRow = new HBox(10,idLabel,idField);
+
+        Button cancelButton = new Button("Cancel");
+        Button applyButton  = new Button("Apply");
+
+        cancelButton.setOnAction(event -> stage.close());
+        applyButton.setOnAction(event -> {
+            String id    = idField.getText();
+            node.setLabel(id);
+            stage.close();
+        });
+
+        HBox buttons = new HBox(10,cancelButton,applyButton);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+
+        VBox root = new VBox(15, idRow, buttons);
+
+        Scene scene = new Scene(root);
+        stage.setScene(scene);
+        stage.showAndWait();
+
     }
 
     private static void showResistor(GraphicResistor resistor){
@@ -32,9 +65,15 @@ public class PropertiesDialog {
         Label resistanceLabel = new Label("Resistance:");
         TextField resistanceField = new TextField(Double.toString(resistor.getR()));
         Label ohmLabel = new Label("Ω");
-        HBox resitanceRow = new HBox(10, resistanceLabel,resistanceField,ohmLabel);
+        HBox resistanceRow = new HBox(10, resistanceLabel,resistanceField,ohmLabel);
 
-        resitanceRow.setAlignment(Pos.CENTER_LEFT);
+        resistanceRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label idLabel = new Label("Name:");
+        TextField idField = new TextField(resistor.getId());
+        HBox idRow = new HBox(10,idLabel,idField);
+
+        idRow.setAlignment(Pos.CENTER_LEFT);
 
         Button cancelButton = new Button("Cancel");
         Button applyButton  = new Button("Apply");
@@ -43,7 +82,9 @@ public class PropertiesDialog {
         applyButton.setOnAction(event -> {
             try{
                 double value = Double.parseDouble(resistanceField.getText());
+                String id    = idField.getText();
                 resistor.setR(value);
+                resistor.setId(id);
                 stage.close();
             }catch (NumberFormatException e){
                 resistanceField.setStyle("-fx-border-color: red;");
@@ -53,7 +94,7 @@ public class PropertiesDialog {
         HBox buttons = new HBox(10,cancelButton,applyButton);
         buttons.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox root = new VBox(15,resitanceRow,buttons);
+        VBox root = new VBox(15, resistanceRow,idRow, buttons);
 
         Scene scene = new Scene(root);
         stage.setScene(scene);
@@ -73,6 +114,12 @@ public class PropertiesDialog {
 
         voltageRow.setAlignment(Pos.CENTER_LEFT);
 
+        Label idLabel = new Label("Name:");
+        TextField idField = new TextField(vsource.getId());
+        HBox idRow = new HBox(10,idLabel,idField);
+
+        idRow.setAlignment(Pos.CENTER_LEFT);
+
         Button cancelButton = new Button("Cancel");
         Button applyButton  = new Button("Apply");
 
@@ -90,7 +137,7 @@ public class PropertiesDialog {
         HBox buttons = new HBox(10,cancelButton,applyButton);
         buttons.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox root = new VBox(15,voltageRow,buttons);
+        VBox root = new VBox(15,voltageRow,idRow,buttons);
 
         Scene scene = new Scene(root);
         stage.setScene(scene);

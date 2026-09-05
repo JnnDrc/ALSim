@@ -28,7 +28,7 @@ public class MNA {
 
         this.solver = solver;
 
-        for(Component component : circuit.components()){
+        for(Component component : circuit.getComponents()){
             component.stamp(this);
         }
     }
@@ -65,6 +65,10 @@ public class MNA {
         System.out.println(b);
     }
 
+    public int nodeIndex(Node node){
+        if(node.getId() == 0) return -1;
+        return node.getId() - 1;
+    }
     public int extraIndex(int offset){
         return nodeCount + offset;
     }

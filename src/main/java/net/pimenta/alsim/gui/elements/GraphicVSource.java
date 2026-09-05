@@ -9,8 +9,8 @@ public class GraphicVSource extends GraphicComponent{
 
     double V = 12;
 
-    public GraphicVSource(GraphicNode neg, GraphicNode pos) {
-        super(neg,pos);
+    public GraphicVSource(String id, GraphicNode neg, GraphicNode pos) {
+        super(id, neg,pos);
     }
 
     @Override

@@ -4,10 +4,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import net.pimenta.alsim.gui.elements.GraphicComponent;
-import net.pimenta.alsim.gui.elements.GraphicElement;
-import net.pimenta.alsim.gui.elements.GraphicNode;
-import net.pimenta.alsim.gui.elements.GraphicWire;
+import net.pimenta.alsim.gui.elements.*;
+import net.pimenta.alsim.gui.simulate.ComponentResult;
+import net.pimenta.alsim.gui.simulate.SimulationResults;
+import net.pimenta.alsim.gui.simulate.SimulationState;
 import net.pimenta.alsim.gui.tools.*;
 import net.pimenta.alsim.gui.ui.PropertiesDialog;
 import net.pimenta.alsim.util.Pair;
@@ -29,8 +29,10 @@ public class CircuitEditor {
     private final List<GraphicWire> wires = new ArrayList<>();
     private final List<GraphicComponent> components = new ArrayList<>();
     private GraphicElement preview;
-    private final Set<GraphicElement> selected = new HashSet<>();
+    private final List<GraphicElement> selected = new ArrayList<>();
     private Tool tool = resistorTool;
+
+    private final SimulationState simulation = new SimulationState();
 
     private int nextNodeId = 0;
 
@@ -90,9 +92,12 @@ public class CircuitEditor {
             }
         }
         GraphicNode node = new GraphicNode(nextNodeId++,x,y);
-        nodes.add(node);
         System.out.println("Node created");
         return node;
+    }
+
+    public void addNode(GraphicNode node){
+        nodes.add(node);
     }
 
     public void addComponent(GraphicComponent graphicComponent) {
@@ -161,7 +166,7 @@ public class CircuitEditor {
         selected.add(ge);
     }
 
-    public Set<GraphicElement> getSelected(){
+    public List<GraphicElement> getSelected(){
         return selected;
     }
 
@@ -170,20 +175,23 @@ public class CircuitEditor {
     }
 
     public void deleteSelected(){
+        List<GraphicNode> affectedNodes = new ArrayList<>();
         for (GraphicElement element : selected){
             if (element instanceof GraphicComponent component){
                 components.remove(component);
 
-                for(GraphicNode node : component.getNodes())
-                    if(!nodeIsUsed(node)) nodes.remove(node);
+                affectedNodes.addAll(component.getNodes());
             }
             else if(element instanceof GraphicWire wire){
                 wires.remove(wire);
 
                 Pair<GraphicNode,GraphicNode> wireNodes = wire.getNodes();
-                if(!nodeIsUsed(wireNodes.getFirst())) nodes.remove(wireNodes.getFirst());
-                if(!nodeIsUsed(wireNodes.getSecond())) nodes.remove(wireNodes.getSecond());
+                affectedNodes.add(wireNodes.getFirst());
+                affectedNodes.add(wireNodes.getSecond());
             }
+        }
+        for(GraphicNode node : affectedNodes){
+            if(!nodeIsUsed(node)) nodes.remove(node);
         }
         selected.clear();
     }
@@ -210,5 +218,32 @@ public class CircuitEditor {
 
     public void editProperties(GraphicElement selected) {
         PropertiesDialog.show(selected);
+    }
+
+    public void simulate(){
+        simulation.simulate(this);
+    }
+    public SimulationState getSimulation() {
+        return simulation;
+    }
+
+    public void swapNodesOfSelected() {
+        if(selected.size() != 1) return;
+        if(selected.getFirst() instanceof GraphicComponent component) {
+            component.swapNodes(0,1);
+        }
+    }
+
+    public void rotateSelectedCW() {
+        if(selected.size() != 1) return;
+        if(selected.getFirst() instanceof GraphicComponent component) {
+            component.rotateCW();
+        }
+    }
+    public void rotateSelectedCCW() {
+        if(selected.size() != 1) return;
+        if(selected.getFirst() instanceof GraphicComponent component) {
+            component.rotateCCW();
+        }
     }
 }

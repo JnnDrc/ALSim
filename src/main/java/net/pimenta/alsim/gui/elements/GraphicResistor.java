@@ -9,8 +9,8 @@ public class GraphicResistor extends GraphicComponent{
 
     double R = 1000;
 
-    public GraphicResistor(GraphicNode a, GraphicNode b) {
-        super(a,b);
+    public GraphicResistor(String id, GraphicNode a, GraphicNode b) {
+        super(id, a,b);
     }
 
     @Override

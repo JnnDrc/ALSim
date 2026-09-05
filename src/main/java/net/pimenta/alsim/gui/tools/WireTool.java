@@ -13,6 +13,8 @@ public class WireTool implements Tool {
         GraphicNode node = editor.findOrCreateNode(x,y);
         if (first == null) first = node;
         else{
+            editor.addNode(first);
+            editor.addNode(node);
             editor.addWire(new GraphicWire(first,node));
             first = null;
             editor.clearPreview();

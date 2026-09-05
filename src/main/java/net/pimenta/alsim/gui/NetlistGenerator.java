@@ -11,7 +11,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 public class NetlistGenerator {
-    public static void generate(CircuitEditor editor, Path path) throws IOException {
+
+    public static String generate(CircuitEditor editor){
         StringBuilder netlist = new StringBuilder();
         NetResolver resolver = new NetResolver(editor.getNodes(),editor.getWires());
         int resitorId = 1;
@@ -48,6 +49,10 @@ public class NetlistGenerator {
         }
 
         netlist.append(".end");
-        Files.writeString(path,netlist);
+        return netlist.toString();
+    }
+
+    public static void generate(CircuitEditor editor, Path path) throws IOException {
+        Files.writeString(path,generate(editor));
     }
 }

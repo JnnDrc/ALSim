@@ -1,7 +1,6 @@
 package net.pimenta.alsim.cak;
 
 
-import net.pimenta.alsim.util.GaussSeidelSolver;
 import net.pimenta.alsim.util.Vector;
 
 import java.io.IOException;
@@ -12,9 +11,7 @@ import java.util.List;
 public class CircuitSolver {
 
     public static void main(String[] args) throws IOException {
-        NetlistParser nlParser = new NetlistParser();
-
-        Circuit circuit = nlParser.parse(Path.of("netlist.ckt"));
+        Circuit circuit = NetlistParser.parse(Path.of("netlist.ckt"));
 
         MNA mna = new MNA(circuit);
 
@@ -58,14 +55,14 @@ public class CircuitSolver {
 
     private static List<Resistor> collectResistors(Circuit circuit){
         List<Resistor> resistors = new ArrayList<>();
-        for(Component component : circuit.components())
+        for(Component component : circuit.getComponents())
             if(component instanceof Resistor resistor) resistors.add(resistor);
         return resistors;
     }
 
     private static List<VSource> collectVsources(Circuit circuit){
         List<VSource> vsources = new ArrayList<>();
-        for (Component component : circuit.components())
+        for (Component component : circuit.getComponents())
             if(component instanceof VSource vSource) vsources.add(vSource);
         return vsources;
     }

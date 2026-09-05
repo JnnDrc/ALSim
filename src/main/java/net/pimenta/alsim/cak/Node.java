@@ -5,10 +5,22 @@ public class Node {
     public Node(int id){
         this.id = id;
     }
-    int getId(){
+    public int getId(){
         return id;
     }
     public void setId(int id) {
         this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        if(this == obj) return true;
+        if(!(obj instanceof Node other)) return false;
+        return id == other.id;
+    }
+
+    @Override
+    public int hashCode(){
+        return Integer.hashCode(id);
     }
 }

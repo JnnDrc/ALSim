@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 public class NetlistParser {
 
-    public Circuit parse(Reader reader) throws RuntimeException, IOException {
+    public static Circuit parse(Reader reader) throws RuntimeException, IOException {
         BufferedReader buffered = new BufferedReader(reader);
 
         Circuit circuit = new Circuit(new Node(0));
@@ -48,15 +48,15 @@ public class NetlistParser {
         return circuit;
     }
 
-    public Circuit parse(Path path) throws IOException{
+    public static Circuit parse(Path path) throws IOException{
         return parse(Files.newBufferedReader(path));
     }
 
-    public Circuit parse(String string) throws IOException{
+    public static Circuit parse(String string) throws IOException{
         return parse(new StringReader(string));
     }
 
-    double parseValue(String text){
+    private static double parseValue(String text){
         char suffix = text.charAt(text.length()-1);
         String withoutLast = new StringBuilder(text).deleteCharAt(text.length() - 1).toString();
 

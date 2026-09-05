@@ -4,19 +4,30 @@ package net.pimenta.alsim.gui;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
+import net.pimenta.alsim.gui.elements.GraphicComponent;
+import net.pimenta.alsim.gui.elements.GraphicElement;
+import net.pimenta.alsim.gui.simulate.ComponentResult;
 
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
 public class CircuitCanvas extends Canvas {
-    CircuitEditor editor;
+    private final CircuitEditor editor = new CircuitEditor();
+    private final Viewport viewport = new Viewport();
+    private double panStartX;
+    private double panStartY;
+    private boolean panning = false;
+
+    private Consumer<GraphicElement> hoverListener;
 
     public CircuitCanvas(double width, double height){
         super(width,height);
-        editor = new CircuitEditor();
         setFocusTraversable(true);
         setOnMouseClicked(this::mouseClicked);
         setOnMouseMoved(this::mouseMoved);
@@ -24,30 +35,76 @@ public class CircuitCanvas extends Canvas {
         setOnKeyPressed(this::KeyPressed);
         setOnMousePressed(this::mousePressed);
         setOnMouseReleased(this::mouseReleased);
+        setOnScroll(this::onScrool);
+    }
+
+    private void onScrool(ScrollEvent event) {
+        double mouseX = event.getX();
+        double mouseY = event.getY();
+
+        double worldX = viewport.toWorldX(mouseX);
+        double worldY = viewport.toWorldY(mouseY);
+
+
+        if(event.getDeltaY() > 0) viewport.zoomIn();
+        else                      viewport.zoomOut();
+
+        viewport.centerOnWorldPoint(worldX,worldY,mouseX,mouseY);
+        draw();
     }
 
     private void mouseReleased(MouseEvent event) {
-        editor.mouseReleased(event.getButton(),event.getX(),event.getY());
+        double x = viewport.toWorldX(event.getX());
+        double y = viewport.toWorldY(event.getY());
+        editor.mouseReleased(event.getButton(),x,y);
+        if(event.getButton() == MouseButton.MIDDLE){
+            panning = false;
+        }
         draw();
     }
 
     private void mousePressed(MouseEvent event) {
-        editor.mousePressed(event.getButton(),event.getX(),event.getY());
+        double x = viewport.toWorldX(event.getX());
+        double y = viewport.toWorldY(event.getY());
+        editor.mousePressed(event.getButton(),x,y);
+        if(event.getButton() == MouseButton.MIDDLE){
+            panning = true;
+            panStartX = event.getX();
+            panStartY = event.getY();
+        }
         draw();
     }
 
     private void mouseClicked(MouseEvent event){
         requestFocus();
-        editor.mouseClicked(event.getButton(),event.getClickCount(),event.getX(),event.getY());
+        double x = viewport.toWorldX(event.getX());
+        double y = viewport.toWorldY(event.getY());
+        editor.mouseClicked(event.getButton(),event.getClickCount(),x,y);
         draw();
     }
     private void mouseMoved(MouseEvent event){
-        editor.mouseMoved(event.getX(),event.getY());
+        double x = viewport.toWorldX(event.getX());
+        double y = viewport.toWorldY(event.getY());
+
+        editor.mouseMoved(x,y);
+
+        GraphicElement ge = editor.findElementAt(x,y);
+        if(hoverListener != null) hoverListener.accept(ge);
+
         draw();
     }
 
     private void mouseDragged(MouseEvent event){
-        editor.mouseDragged(event.getX(),event.getY());
+        double x = viewport.toWorldX(event.getX());
+        double y = viewport.toWorldY(event.getY());
+        editor.mouseDragged(x,y);
+        if(event.getButton() == MouseButton.MIDDLE && panning){
+            double dx = event.getX() - panStartX;
+            double dy = event.getY() - panStartY;
+            viewport.pan(dx,dy);
+            panStartX = event.getX();
+            panStartY = event.getY();
+        }
         draw();
     }
 
@@ -58,7 +115,11 @@ public class CircuitCanvas extends Canvas {
             case W -> editor.setWireTool();
             case ESCAPE -> editor.setSelectTool();
             case DELETE -> editor.deleteSelected();
-            case F1 -> {
+            case P -> editor.swapNodesOfSelected();
+            case S -> editor.rotateSelectedCW();
+            case D -> editor.rotateSelectedCCW();
+            case F1 -> editor.simulate();
+            case F2 -> {
                 try{
                     NetlistGenerator.generate(editor, Path.of("netlist.ckt"));
                 } catch (IOException e) {
@@ -72,25 +133,54 @@ public class CircuitCanvas extends Canvas {
     public void draw(){
         GraphicsContext gc = getGraphicsContext2D();
 
+        // clear screen
+        gc.clearRect(0,0,getWidth(),getHeight());
+
+        // save coordinate system and transform to world one
+        gc.save();
+
+        gc.translate(viewport.getOffsetX(),viewport.getOffsetY());
+        gc.scale(viewport.getZoom(),viewport.getZoom());
+
         gc.setFill(Color.WHITE);
         gc.setLineWidth(.5);
 
-        gc.clearRect(0,0,getWidth(),getHeight());
+        drawGrid(gc);
+        editor.draw(gc);
 
-        // draw grid
+        // restore original coordinates
+        gc.restore();
+    }
+
+    private void drawGrid(GraphicsContext gc) {
+        double worldLeft  = viewport.toWorldX(0);
+        double worldTop   = viewport.toWorldY(0);
+        double worldRight = viewport.toWorldX(getWidth());
+        double worldBottom = viewport.toWorldY(getHeight());
 
         gc.setStroke(Color.BLACK);
-        double w = getWidth();
-        double h = getHeight();
-        for(double x = 0; x < w; x+= editor.GRID_SIZE){
-          gc.strokeLine(x,0,x,h);
-        }
-        for(double y = 0; y < h; y+= editor.GRID_SIZE){
-            gc.strokeLine(0,y,w,y);
+        gc.setLineWidth(0.5 / viewport.getZoom());
 
+        for (double x = Math.floor(worldLeft / editor.GRID_SIZE) * editor.GRID_SIZE;
+             x <= worldRight;
+             x += editor.GRID_SIZE) {
+
+            gc.strokeLine(x, worldTop, x, worldBottom);
         }
 
-        // draw editor elements
-        editor.draw(gc);
+        for (double y = Math.floor(worldTop / editor.GRID_SIZE) * editor.GRID_SIZE;
+             y <= worldBottom;
+             y += editor.GRID_SIZE) {
+
+            gc.strokeLine(worldLeft, y, worldRight, y);
+        }
+    }
+
+    public void setHoverListener(Consumer<GraphicElement> listener){
+        hoverListener = listener;
+    }
+
+    public CircuitEditor getEditor() {
+        return editor;
     }
 }

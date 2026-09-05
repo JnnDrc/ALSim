@@ -111,15 +111,10 @@ public class SelectTool implements Tool{
         if(ge != null){
             if(editor.getSelected().isEmpty()){
                 editor.addSelected(ge);
-                dragStartX = x;
-                dragStartY = y;
-                dragging = true;
             }
-            else{
-                dragStartX = x;
-                dragStartY = y;
-                dragging = true;
-            }
+            dragStartX = x;
+            dragStartY = y;
+            dragging = true;
         }
         else{
             editor.clearSelection();

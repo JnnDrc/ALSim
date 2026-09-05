@@ -8,12 +8,15 @@ import net.pimenta.alsim.gui.elements.GraphicVSource;
 
 public class VSourceTool implements Tool {
     private GraphicNode first;
+    private int vSourceCount = 1;
     @Override
     public void mouseClicked(CircuitEditor editor,MouseButton button, int clickCount, double x, double y) {
         GraphicNode node = editor.findOrCreateNode(x,y);
         if (first == null) first = node;
         else{
-            editor.addComponent(new GraphicVSource(first,node));
+            editor.addNode(first);
+            editor.addNode(node);
+            editor.addComponent(new GraphicVSource("V" + vSourceCount++,first,node));
             first = null;
             editor.clearPreview();
         }
@@ -27,7 +30,7 @@ public class VSourceTool implements Tool {
 
         GraphicNode cursor = new GraphicNode(-1, x, y);
 
-        editor.setPreview(new GraphicVSource(first, cursor));
+        editor.setPreview(new GraphicVSource("__VPREVIEW__",first, cursor));
     }
 
     @Override

@@ -5,14 +5,24 @@ import javafx.scene.canvas.GraphicsContext;
 public class GraphicNode extends GraphicElement{
     private final int nodeId;
     private double x, y;
+    private String label;
 
-    private static final double RADIUS = 8;
+    private final double RADIUS = 8;
 
     public GraphicNode(int nodeId,double x, double y){
         this.nodeId = nodeId;
         this.x = x;
         this.y = y;
     }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
     @Override
     public void draw(GraphicsContext gc){
         gc.fillOval(x - RADIUS/2,y - RADIUS/2,RADIUS,RADIUS);
