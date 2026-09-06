@@ -3,6 +3,9 @@ package net.pimenta.alsim.gui;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -10,7 +13,6 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 import net.pimenta.alsim.gui.elements.GraphicComponent;
 import net.pimenta.alsim.gui.elements.GraphicElement;
-import net.pimenta.alsim.gui.simulate.ComponentResult;
 
 
 import java.io.IOException;
@@ -24,7 +26,11 @@ public class CircuitCanvas extends Canvas {
     private double panStartY;
     private boolean panning = false;
 
+    private boolean grid = true;
+
     private Consumer<GraphicElement> hoverListener;
+
+    private ContextMenu contextMenu = new ContextMenu();
 
     public CircuitCanvas(double width, double height){
         super(width,height);
@@ -66,8 +72,12 @@ public class CircuitCanvas extends Canvas {
     private void mousePressed(MouseEvent event) {
         double x = viewport.toWorldX(event.getX());
         double y = viewport.toWorldY(event.getY());
-        editor.mousePressed(event.getButton(),x,y);
-        if(event.getButton() == MouseButton.MIDDLE){
+
+        if(event.getButton() == MouseButton.PRIMARY){
+            editor.mousePressed(event.getButton(),x,y);
+        } else if (event.getButton() == MouseButton.SECONDARY) {
+            showContextMenu(event,x,y);
+        } else if(event.getButton() == MouseButton.MIDDLE){
             panning = true;
             panStartX = event.getX();
             panStartY = event.getY();
@@ -142,10 +152,7 @@ public class CircuitCanvas extends Canvas {
         gc.translate(viewport.getOffsetX(),viewport.getOffsetY());
         gc.scale(viewport.getZoom(),viewport.getZoom());
 
-        gc.setFill(Color.WHITE);
-        gc.setLineWidth(.5);
-
-        drawGrid(gc);
+        if(grid) drawGrid(gc);
         editor.draw(gc);
 
         // restore original coordinates
@@ -176,11 +183,80 @@ public class CircuitCanvas extends Canvas {
         }
     }
 
+
+    private void showContextMenu(MouseEvent event, double x, double y) {
+        contextMenu.hide();
+        contextMenu.getItems().clear();
+
+        GraphicElement ge = editor.findElementAt(x,y);
+
+        if(ge == null) contextMenu = showCanvasContextMenu();
+        else{
+            editor.clearSelection();
+            editor.addSelected(ge);
+            contextMenu = showElementContextMenu(ge);
+        }
+
+        contextMenu.show(this,event.getScreenX(),event.getScreenY());
+    }
+
+    private ContextMenu showElementContextMenu(GraphicElement ge) {
+        ContextMenu menu = new ContextMenu();
+
+        if(ge instanceof GraphicComponent){
+            MenuItem properties = new MenuItem("Properties (Double click)");
+            MenuItem rotateCW   = new MenuItem("Rotate CW  (S)");
+            MenuItem rotateCCW  = new MenuItem("Rotate CCW (D)");
+            MenuItem permute    = new MenuItem("Permute (P)");
+
+            properties.setOnAction(e -> editor.editProperties(ge));
+            rotateCW.setOnAction(e -> editor.rotateSelectedCW());
+            rotateCCW.setOnAction(e -> editor.rotateSelectedCCW());
+            permute.setOnAction(e -> editor.swapNodesOfSelected());
+
+            menu.getItems().addAll(
+                    properties,
+                    new SeparatorMenuItem(),
+                    rotateCW,rotateCCW,permute
+            );
+        }
+
+        MenuItem delete     = new MenuItem("Delete");
+        delete.setOnAction(e -> editor.deleteSelected());
+
+        menu.getItems().addAll(new SeparatorMenuItem(), delete);
+
+        return menu;
+    }
+
+    private ContextMenu showCanvasContextMenu() {
+        ContextMenu menu = new ContextMenu();
+
+        MenuItem resistor = new MenuItem("Place resistor (R)");
+        MenuItem vSource  = new MenuItem("Place VSource  (V)");
+        MenuItem wire     = new MenuItem("Place wire (W)");
+
+        resistor.setOnAction(e -> editor.setResistorTool());
+        vSource.setOnAction(e -> editor.setVSourceTool());
+        wire.setOnAction(e -> editor.setWireTool());
+
+        menu.getItems().addAll(resistor,vSource,wire);
+
+        return menu;
+    }
+
     public void setHoverListener(Consumer<GraphicElement> listener){
         hoverListener = listener;
     }
 
     public CircuitEditor getEditor() {
         return editor;
+    }
+
+    public void setGrid(boolean grid) {
+        this.grid = grid;
+    }
+    public boolean getGrid(){
+        return grid;
     }
 }

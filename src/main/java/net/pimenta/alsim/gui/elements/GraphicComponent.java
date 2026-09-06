@@ -1,10 +1,14 @@
 package net.pimenta.alsim.gui.elements;
 
+import net.pimenta.alsim.gui.simulate.ComponentResult;
+
 import java.util.List;
 
 public abstract class GraphicComponent extends GraphicElement{
     protected final List<GraphicNode> nodes;
     private   String id;
+
+    private ComponentResult lastResult;
 
     protected GraphicComponent(String id, GraphicNode... nodes){
         this.nodes = List.of(nodes);
@@ -21,6 +25,14 @@ public abstract class GraphicComponent extends GraphicElement{
 
     public List<GraphicNode> getNodes() {
         return nodes;
+    }
+
+    public ComponentResult getResult() {
+        return lastResult;
+    }
+
+    public void setResult(ComponentResult lastResult) {
+        this.lastResult = lastResult;
     }
 
     public boolean hasNode(GraphicNode node){

@@ -35,8 +35,8 @@ public class SimulationInfoPanel extends VBox {
         setVisible(false);
     }
 
-    public void showComponent(GraphicComponent component, ComponentResult result) {
-
+    public void showComponent(GraphicComponent component) {
+        ComponentResult result = component.getResult();
         title.setText(component.getId());
 
         // example

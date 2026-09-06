@@ -83,7 +83,7 @@ public class SelectTool implements Tool{
 
     @Override
     public void cancel(CircuitEditor editor) {
-
+        editor.getSelected().clear();
     }
 
     @Override

@@ -49,6 +49,7 @@ public class Viewport {
     public void setOffsetY(double offsetY) {
         this.offsetY = offsetY;
     }
+
     public void zoomIn() {
         zoom = Math.min(MAX_ZOOM,zoom * ZOOM_FACTOR);
     }

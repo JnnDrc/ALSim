@@ -1,5 +1,7 @@
 package net.pimenta.alsim.util;
 
+import javafx.scene.paint.Color;
+
 public class Misc {
      public static double distToSegment(
             double px, double py,
@@ -24,4 +26,9 @@ public class Misc {
 
         return Math.hypot(px - closestX, py - closestY);
     }
+
+    public static Color fadeToBlack(Color color, double t){
+         return new Color(color.getRed()*(1.0-t), color.getGreen()*(1.0-t),color.getBlue()*(1.0-t),1.00);
+    }
+
 }

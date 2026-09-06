@@ -18,15 +18,15 @@ import java.util.List;
 
 public class CircuitEditor {
     public  final double GRID_SIZE   = 50;
-    private final double SNAP_RADIUS = 25;
+    private final double SNAP_RADIUS = GRID_SIZE/2;
 
     private static final Tool resistorTool = new ResistorTool();
     private static final Tool vsourceTool  = new VSourceTool();
     private static final Tool wireTool     = new WireTool();
     private static final Tool selectTool   = new SelectTool();
 
-    private final List<GraphicNode> nodes = new ArrayList<>();
-    private final List<GraphicWire> wires = new ArrayList<>();
+    private final List<GraphicNode>      nodes      = new ArrayList<>();
+    private final List<GraphicWire>      wires      = new ArrayList<>();
     private final List<GraphicComponent> components = new ArrayList<>();
     private GraphicElement preview;
     private final List<GraphicElement> selected = new ArrayList<>();
@@ -55,7 +55,6 @@ public class CircuitEditor {
     public void setSelectTool() {
         tool.cancel(this);
         tool = selectTool;
-        selected.clear();
     }
 
     public void mouseClicked(MouseButton button, int clickCount, double x, double y){
@@ -87,17 +86,14 @@ public class CircuitEditor {
     public GraphicNode findOrCreateNode(double x, double y){
         for (GraphicNode node : nodes){
             if(node.distTo(x,y) < SNAP_RADIUS){
-                System.out.println("Node selected");
                 return node;
             }
         }
-        GraphicNode node = new GraphicNode(nextNodeId++,x,y);
-        System.out.println("Node created");
-        return node;
+        return new GraphicNode(nextNodeId++,x,y);
     }
 
     public void addNode(GraphicNode node){
-        nodes.add(node);
+        if(!nodes.contains(node)) nodes.add(node);
     }
 
     public void addComponent(GraphicComponent graphicComponent) {
@@ -145,6 +141,9 @@ public class CircuitEditor {
 
     public void addWire(GraphicWire wire) {
         wires.add(wire);
+        Pair<GraphicNode,GraphicNode> wireNodes = wire.getNodes();
+        addNode(wireNodes.getFirst());
+        addNode(wireNodes.getSecond());
     }
 
     public List<GraphicComponent> getComponents(){

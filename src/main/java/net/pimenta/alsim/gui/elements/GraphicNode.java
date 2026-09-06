@@ -1,6 +1,7 @@
 package net.pimenta.alsim.gui.elements;
 
 import javafx.scene.canvas.GraphicsContext;
+import net.pimenta.alsim.gui.simulate.NodeResult;
 
 public class GraphicNode extends GraphicElement{
     private final int nodeId;
@@ -8,6 +9,8 @@ public class GraphicNode extends GraphicElement{
     private String label;
 
     private final double RADIUS = 8;
+
+    private NodeResult lastResult;
 
     public GraphicNode(int nodeId,double x, double y){
         this.nodeId = nodeId;
@@ -17,6 +20,14 @@ public class GraphicNode extends GraphicElement{
 
     public String getLabel() {
         return label;
+    }
+
+    public NodeResult getResult() {
+        return lastResult;
+    }
+
+    public void setResult(NodeResult lastResult) {
+        this.lastResult = lastResult;
     }
 
     public void setLabel(String label) {

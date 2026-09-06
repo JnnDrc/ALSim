@@ -1,6 +1,11 @@
 package net.pimenta.alsim.gui.elements;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import net.pimenta.alsim.gui.simulate.NodeResult;
 import net.pimenta.alsim.util.Misc;
 
 public class GraphicVSource extends GraphicComponent{
@@ -25,10 +30,20 @@ public class GraphicVSource extends GraphicComponent{
         GraphicNode a = nodes.get(0);
         GraphicNode b = nodes.get(1);
 
-        drawVSource(gc, a.getX(), a.getY(), b.getX(), b.getY());
+        drawVSource(gc, a, b);
     }
 
-    private void drawVSource(GraphicsContext gc, double ax, double ay, double bx, double by) {
+    private void drawVSource(GraphicsContext gc, GraphicNode a, GraphicNode b) {
+        double ax = a.getX();
+        double ay = a.getY();
+        double bx = b.getX();
+        double by = b.getY();
+
+        NodeResult ar = a.getResult();
+        NodeResult br = b.getResult();
+        double va = ar == null ? 0 : ar.getVoltage();
+        double vb = br == null ? 0 : br.getVoltage();
+
         double dx = bx - ax;
         double dy = by - ay;
 
@@ -52,8 +67,26 @@ public class GraphicVSource extends GraphicComponent{
         double x2 = bx - ux * lead;
         double y2 = by - uy * lead;
 
+        Color colorA;
+        Color colorB;
+
+        if(Math.abs(va - vb) < 10e-9){
+            colorA = Color.BLACK;
+            colorB = Color.BLACK;
+        }
+        else if(va > vb){
+            colorA = Color.LIGHTGREEN;
+            colorB = Color.RED;
+        }
+        else{
+            colorA = Color.RED;
+            colorB = Color.LIGHTGREEN;
+        }
+
         // Leads
+        gc.setStroke(new LinearGradient(ax,ay,x1,y1,false, CycleMethod.NO_CYCLE,new Stop(0,colorA),new Stop(2, Color.BLACK)));
         gc.strokeLine(ax, ay, x1, y1);
+        gc.setStroke(new LinearGradient(bx,by,x2,y2,false, CycleMethod.NO_CYCLE,new Stop(0,colorB),new Stop(2,Color.BLACK)));
         gc.strokeLine(x2, y2, bx, by);
 
         // plates

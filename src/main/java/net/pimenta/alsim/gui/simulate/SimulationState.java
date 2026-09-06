@@ -1,12 +1,15 @@
 package net.pimenta.alsim.gui.simulate;
 
 import net.pimenta.alsim.gui.CircuitEditor;
+import net.pimenta.alsim.gui.NetResolver;
+import net.pimenta.alsim.gui.elements.GraphicComponent;
+import net.pimenta.alsim.gui.elements.GraphicNode;
 
 
 public class SimulationState {
-    SimulationResults results = null;
-    boolean dirty = true;
-    double  time = 0;
+    private SimulationResults results = null;
+    private boolean dirty = true;
+    private double  time = 0;
 
     public void simulate(CircuitEditor editor){
         Simulator simulator = new Simulator();
@@ -19,6 +22,24 @@ public class SimulationState {
         catch (Exception e){
             System.err.println("Failed to simulate: " + e.getMessage());
         }
+
+        for(GraphicComponent component : editor.getComponents()) {
+            component.setResult(results.getComponentResult(component.getId()));
+        }
+
+        NetResolver resolver = new NetResolver(editor.getNodes(),editor.getWires());
+        for (GraphicNode node : editor.getNodes()){
+            int net = resolver.netOf(node);
+            NodeResult result = results.getNodeResult(net);
+
+            System.out.println(
+                    "Updating node " + node.getNode() +
+                            " -> " + (result == null ? "null" : result.getVoltage()) +
+                            " object=" + System.identityHashCode(node)
+            );
+            node.setResult(result);
+        }
+
     }
 
     public NodeResult getNodeResult(int id){
