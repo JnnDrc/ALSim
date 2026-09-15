@@ -27,8 +27,18 @@ public class Misc {
         return Math.hypot(px - closestX, py - closestY);
     }
 
-    public static Color fadeToBlack(Color color, double t){
-         return new Color(color.getRed()*(1.0-t), color.getGreen()*(1.0-t),color.getBlue()*(1.0-t),1.00);
+    public static double parseValue(String text){
+        char suffix = text.charAt(text.length()-1);
+        String withoutLast = new StringBuilder(text).deleteCharAt(text.length() - 1).toString();
+
+        return switch (suffix) {
+            case 'k' -> Double.parseDouble(withoutLast) * 1e3;
+            case 'm' -> Double.parseDouble(withoutLast) * 1e-3;
+            case 'u' -> Double.parseDouble(withoutLast) * 1e-6;
+            case 'n' -> Double.parseDouble(withoutLast) * 1e-9;
+            case 'p' -> Double.parseDouble(withoutLast) * 1e-12;
+            default -> Double.parseDouble(text);
+        };
     }
 
 }

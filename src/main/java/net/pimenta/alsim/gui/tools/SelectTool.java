@@ -2,10 +2,7 @@ package net.pimenta.alsim.gui.tools;
 
 import javafx.scene.input.MouseButton;
 import net.pimenta.alsim.gui.CircuitEditor;
-import net.pimenta.alsim.gui.elements.GraphicComponent;
-import net.pimenta.alsim.gui.elements.GraphicElement;
-import net.pimenta.alsim.gui.elements.GraphicNode;
-import net.pimenta.alsim.gui.elements.GraphicWire;
+import net.pimenta.alsim.gui.elements.*;
 import net.pimenta.alsim.util.Pair;
 
 import javafx.scene.shape.Rectangle;
@@ -66,6 +63,9 @@ public class SelectTool implements Tool{
                 nodes.add(wireNodes.getFirst());
                 nodes.add(wireNodes.getSecond());
             }
+            else if(ge instanceof GraphicProbe probe){
+                nodes.add(probe.getNode());
+            }
         }
 
         for(GraphicNode node : nodes){
@@ -98,6 +98,10 @@ public class SelectTool implements Tool{
             for(GraphicWire wire : editor.getWires()){
                 if(wire.inside(rect.getX(),rect.getY(),rect.getWidth(),rect.getHeight()))
                     editor.addSelected(wire);
+            }
+            for(GraphicProbe probe : editor.getProbes()){
+                if(probe.inside(rect.getX(),rect.getY(),rect.getWidth(),rect.getHeight()))
+                    editor.addSelected(probe);
             }
         }
         dragging = false;

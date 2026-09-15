@@ -50,21 +50,22 @@ public class Viewport {
         this.offsetY = offsetY;
     }
 
-    public void zoomIn() {
-        zoom = Math.min(MAX_ZOOM,zoom * ZOOM_FACTOR);
+    public double getBaseFactor(){
+        return ZOOM_FACTOR;
     }
 
-    public void zoomOut() {
-        zoom = Math.max(MIN_ZOOM, zoom / ZOOM_FACTOR);
+    public void zoomAt(double screenX, double screenY, double factor){
+        double worldX = toWorldX(screenX);
+        double worldY = toWorldY(screenY);
+
+        zoom = Math.clamp(zoom*factor,MIN_ZOOM,MAX_ZOOM);
+
+        offsetX = screenX - worldX * zoom;
+        offsetY = screenY - worldY * zoom;
     }
 
     public void pan(double dx, double dy) {
         offsetX += dx;
         offsetY += dy;
-    }
-
-    public void centerOnWorldPoint(double worldX, double worldY, double screenX, double screenY) {
-        offsetX = screenX - worldX*zoom;
-        offsetY = screenY - worldY*zoom;
     }
 }

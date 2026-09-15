@@ -1,6 +1,7 @@
 package net.pimenta.alsim.gui;
 
 
+import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
@@ -17,11 +18,14 @@ import net.pimenta.alsim.gui.elements.GraphicElement;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class CircuitCanvas extends Canvas {
-    private final CircuitEditor editor = new CircuitEditor();
-    private final Viewport viewport = new Viewport();
+    private final List<CircuitContext> circuits = new ArrayList<>();
+    private int activeCircuit = -1;
+
     private double panStartX;
     private double panStartY;
     private boolean panning = false;
@@ -41,28 +45,23 @@ public class CircuitCanvas extends Canvas {
         setOnKeyPressed(this::KeyPressed);
         setOnMousePressed(this::mousePressed);
         setOnMouseReleased(this::mouseReleased);
-        setOnScroll(this::onScrool);
+        setOnScroll(this::onScroll);
     }
 
-    private void onScrool(ScrollEvent event) {
-        double mouseX = event.getX();
-        double mouseY = event.getY();
+    private void onScroll(ScrollEvent event) {
+        if(event.getDeltaY() == 0) return;
 
-        double worldX = viewport.toWorldX(mouseX);
-        double worldY = viewport.toWorldY(mouseY);
+        double factor = Math.pow(getViewport().getBaseFactor(),event.getDeltaY()/40.0);
 
+        getViewport().zoomAt(event.getX(),event.getY(),factor);
 
-        if(event.getDeltaY() > 0) viewport.zoomIn();
-        else                      viewport.zoomOut();
-
-        viewport.centerOnWorldPoint(worldX,worldY,mouseX,mouseY);
         draw();
     }
 
     private void mouseReleased(MouseEvent event) {
-        double x = viewport.toWorldX(event.getX());
-        double y = viewport.toWorldY(event.getY());
-        editor.mouseReleased(event.getButton(),x,y);
+        double x = getViewport().toWorldX(event.getX());
+        double y = getViewport().toWorldY(event.getY());
+        getEditor().mouseReleased(event.getButton(),x,y);
         if(event.getButton() == MouseButton.MIDDLE){
             panning = false;
         }
@@ -70,11 +69,11 @@ public class CircuitCanvas extends Canvas {
     }
 
     private void mousePressed(MouseEvent event) {
-        double x = viewport.toWorldX(event.getX());
-        double y = viewport.toWorldY(event.getY());
+        double x = getViewport().toWorldX(event.getX());
+        double y = getViewport().toWorldY(event.getY());
 
         if(event.getButton() == MouseButton.PRIMARY){
-            editor.mousePressed(event.getButton(),x,y);
+            getEditor().mousePressed(event.getButton(),x,y);
         } else if (event.getButton() == MouseButton.SECONDARY) {
             showContextMenu(event,x,y);
         } else if(event.getButton() == MouseButton.MIDDLE){
@@ -87,31 +86,33 @@ public class CircuitCanvas extends Canvas {
 
     private void mouseClicked(MouseEvent event){
         requestFocus();
-        double x = viewport.toWorldX(event.getX());
-        double y = viewport.toWorldY(event.getY());
-        editor.mouseClicked(event.getButton(),event.getClickCount(),x,y);
+        double x = getViewport().toWorldX(event.getX());
+        double y = getViewport().toWorldY(event.getY());
+        if(event.getButton() == MouseButton.PRIMARY){
+            getEditor().mouseClicked(event.getButton(),event.getClickCount(),x,y);
+        }
         draw();
     }
     private void mouseMoved(MouseEvent event){
-        double x = viewport.toWorldX(event.getX());
-        double y = viewport.toWorldY(event.getY());
+        double x = getViewport().toWorldX(event.getX());
+        double y = getViewport().toWorldY(event.getY());
 
-        editor.mouseMoved(x,y);
+        getEditor().mouseMoved(x,y);
 
-        GraphicElement ge = editor.findElementAt(x,y);
+        GraphicElement ge = getEditor().findElementAt(x,y);
         if(hoverListener != null) hoverListener.accept(ge);
 
         draw();
     }
 
     private void mouseDragged(MouseEvent event){
-        double x = viewport.toWorldX(event.getX());
-        double y = viewport.toWorldY(event.getY());
-        editor.mouseDragged(x,y);
+        double x = getViewport().toWorldX(event.getX());
+        double y = getViewport().toWorldY(event.getY());
+        getEditor().mouseDragged(x,y);
         if(event.getButton() == MouseButton.MIDDLE && panning){
             double dx = event.getX() - panStartX;
             double dy = event.getY() - panStartY;
-            viewport.pan(dx,dy);
+            getViewport().pan(dx,dy);
             panStartX = event.getX();
             panStartY = event.getY();
         }
@@ -119,25 +120,39 @@ public class CircuitCanvas extends Canvas {
     }
 
     private void KeyPressed(KeyEvent event) {
+        if(event.isControlDown()) controlKeys(event);
+        else normalKeys(event);
+
+        draw();
+    }
+    private void controlKeys(KeyEvent event){
         switch (event.getCode()){
-            case R -> editor.setResistorTool();
-            case V -> editor.setVSourceTool();
-            case W -> editor.setWireTool();
-            case ESCAPE -> editor.setSelectTool();
-            case DELETE -> editor.deleteSelected();
-            case P -> editor.swapNodesOfSelected();
-            case S -> editor.rotateSelectedCW();
-            case D -> editor.rotateSelectedCCW();
-            case F1 -> editor.simulate();
+            //case S -> getEditor().saveCircuit();
+            //case O -> getEditor().openCircuit();
+            case Q -> Platform.exit();
+            case G -> grid = !grid;
+        }
+    }
+    private void normalKeys(KeyEvent event){
+        switch (event.getCode()){
+            case R -> getEditor().setResistorTool();
+            case V -> getEditor().setVSourceTool();
+            case W -> getEditor().setWireTool();
+            case P -> getEditor().setProbeTool();
+            case ESCAPE -> getEditor().setSelectTool();
+            case DELETE -> getEditor().deleteSelected();
+            case F -> getEditor().swapNodesOfSelected();
+            case S -> getEditor().rotateSelectedCW();
+            case D -> getEditor().rotateSelectedCCW();
+            case F1 -> getEditor().simulate();
             case F2 -> {
                 try{
-                    NetlistGenerator.generate(editor, Path.of("netlist.ckt"));
+                    NetlistGenerator.generate(getEditor(), Path.of("netlist.ckt"));
                 } catch (IOException e) {
                     System.out.println("Failed to generate netlist\n"+e.getMessage());
                 }
             }
         }
-        draw();
     }
 
     public void draw(){
@@ -149,35 +164,35 @@ public class CircuitCanvas extends Canvas {
         // save coordinate system and transform to world one
         gc.save();
 
-        gc.translate(viewport.getOffsetX(),viewport.getOffsetY());
-        gc.scale(viewport.getZoom(),viewport.getZoom());
+        gc.translate(getViewport().getOffsetX(),getViewport().getOffsetY());
+        gc.scale(getViewport().getZoom(),getViewport().getZoom());
 
         if(grid) drawGrid(gc);
-        editor.draw(gc);
+        getEditor().draw(gc);
 
         // restore original coordinates
         gc.restore();
     }
 
     private void drawGrid(GraphicsContext gc) {
-        double worldLeft  = viewport.toWorldX(0);
-        double worldTop   = viewport.toWorldY(0);
-        double worldRight = viewport.toWorldX(getWidth());
-        double worldBottom = viewport.toWorldY(getHeight());
+        double worldLeft  = getViewport().toWorldX(0);
+        double worldTop   = getViewport().toWorldY(0);
+        double worldRight = getViewport().toWorldX(getWidth());
+        double worldBottom = getViewport().toWorldY(getHeight());
 
         gc.setStroke(Color.BLACK);
-        gc.setLineWidth(0.5 / viewport.getZoom());
+        gc.setLineWidth(0.5 / getViewport().getZoom());
 
-        for (double x = Math.floor(worldLeft / editor.GRID_SIZE) * editor.GRID_SIZE;
+        for (double x = Math.floor(worldLeft / getEditor().GRID_SIZE) * getEditor().GRID_SIZE;
              x <= worldRight;
-             x += editor.GRID_SIZE) {
+             x += getEditor().GRID_SIZE) {
 
             gc.strokeLine(x, worldTop, x, worldBottom);
         }
 
-        for (double y = Math.floor(worldTop / editor.GRID_SIZE) * editor.GRID_SIZE;
+        for (double y = Math.floor(worldTop / getEditor().GRID_SIZE) * getEditor().GRID_SIZE;
              y <= worldBottom;
-             y += editor.GRID_SIZE) {
+             y += getEditor().GRID_SIZE) {
 
             gc.strokeLine(worldLeft, y, worldRight, y);
         }
@@ -188,12 +203,12 @@ public class CircuitCanvas extends Canvas {
         contextMenu.hide();
         contextMenu.getItems().clear();
 
-        GraphicElement ge = editor.findElementAt(x,y);
+        GraphicElement ge = getEditor().findElementAt(x,y);
 
         if(ge == null) contextMenu = showCanvasContextMenu();
         else{
-            editor.clearSelection();
-            editor.addSelected(ge);
+            getEditor().clearSelection();
+            getEditor().addSelected(ge);
             contextMenu = showElementContextMenu(ge);
         }
 
@@ -207,12 +222,12 @@ public class CircuitCanvas extends Canvas {
             MenuItem properties = new MenuItem("Properties (Double click)");
             MenuItem rotateCW   = new MenuItem("Rotate CW  (S)");
             MenuItem rotateCCW  = new MenuItem("Rotate CCW (D)");
-            MenuItem permute    = new MenuItem("Permute (P)");
+            MenuItem permute    = new MenuItem("Permute (F)");
 
-            properties.setOnAction(e -> editor.editProperties(ge));
-            rotateCW.setOnAction(e -> editor.rotateSelectedCW());
-            rotateCCW.setOnAction(e -> editor.rotateSelectedCCW());
-            permute.setOnAction(e -> editor.swapNodesOfSelected());
+            properties.setOnAction(e -> getEditor().editProperties(ge));
+            rotateCW.setOnAction(e -> getEditor().rotateSelectedCW());
+            rotateCCW.setOnAction(e -> getEditor().rotateSelectedCCW());
+            permute.setOnAction(e -> getEditor().swapNodesOfSelected());
 
             menu.getItems().addAll(
                     properties,
@@ -222,7 +237,7 @@ public class CircuitCanvas extends Canvas {
         }
 
         MenuItem delete     = new MenuItem("Delete");
-        delete.setOnAction(e -> editor.deleteSelected());
+        delete.setOnAction(e -> getEditor().deleteSelected());
 
         menu.getItems().addAll(new SeparatorMenuItem(), delete);
 
@@ -235,22 +250,53 @@ public class CircuitCanvas extends Canvas {
         MenuItem resistor = new MenuItem("Place resistor (R)");
         MenuItem vSource  = new MenuItem("Place VSource  (V)");
         MenuItem wire     = new MenuItem("Place wire (W)");
+        MenuItem probe    = new MenuItem("Place Probe (P)");
 
-        resistor.setOnAction(e -> editor.setResistorTool());
-        vSource.setOnAction(e -> editor.setVSourceTool());
-        wire.setOnAction(e -> editor.setWireTool());
+        resistor.setOnAction(e -> getEditor().setResistorTool());
+        vSource.setOnAction(e -> getEditor().setVSourceTool());
+        wire.setOnAction(e -> getEditor().setWireTool());
+        probe.setOnAction(e -> getEditor().setProbeTool());
 
-        menu.getItems().addAll(resistor,vSource,wire);
+        menu.getItems().addAll(resistor,vSource,new SeparatorMenuItem(),wire,new SeparatorMenuItem(),probe);
 
         return menu;
     }
+
+
 
     public void setHoverListener(Consumer<GraphicElement> listener){
         hoverListener = listener;
     }
 
+    public Viewport getViewport() {
+        return circuits.get(activeCircuit).getViewport();
+    }
     public CircuitEditor getEditor() {
-        return editor;
+        return circuits.get(activeCircuit).getEditor();
+    }
+    public CircuitContext getActiveCircuit(){
+        return circuits.get(activeCircuit);
+    }
+    public void setActive(int index) {
+        if (index < 0 || index >= circuits.size())
+            throw new IndexOutOfBoundsException(index);
+
+        activeCircuit = index;
+        draw();
+    }
+    public int getActive(){
+        return activeCircuit;
+    }
+    public int getCircuitCount() {
+        return circuits.size();
+    }
+
+    public int newCircuit(){
+        circuits.add(new CircuitContext());
+        return circuits.size() - 1;
+    }
+    public void closeCircuit(int index){
+        circuits.remove(index);
     }
 
     public void setGrid(boolean grid) {
@@ -258,5 +304,8 @@ public class CircuitCanvas extends Canvas {
     }
     public boolean getGrid(){
         return grid;
+    }
+    public void toggleGrid(){
+        grid = !grid;
     }
 }

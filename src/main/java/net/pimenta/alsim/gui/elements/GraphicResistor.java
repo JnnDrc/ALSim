@@ -2,10 +2,7 @@ package net.pimenta.alsim.gui.elements;
 
 import javafx.scene.Node;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
+import javafx.scene.paint.*;
 import net.pimenta.alsim.gui.simulate.NodeResult;
 import net.pimenta.alsim.util.Misc;
 
@@ -15,16 +12,20 @@ public class GraphicResistor extends GraphicComponent{
 
     double R = 1000;
 
+    public GraphicResistor(String id, GraphicNode a, GraphicNode b, double R){
+        super(id,a,b);
+        this.R = R;
+    }
     public GraphicResistor(String id, GraphicNode a, GraphicNode b) {
         super(id, a,b);
     }
 
     @Override
-    public void draw(GraphicsContext gc) {
+    public void draw(GraphicsContext gc, GraphicMode mode) {
         GraphicNode a = nodes.get(0);
         GraphicNode b = nodes.get(1);
 
-        drawResistor(gc, a, b);
+        drawResistor(gc, mode, a, b);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class GraphicResistor extends GraphicComponent{
         return Misc.distToSegment(x,y,a.getX(),a.getY(),b.getX(),b.getY()) < 10.0;
     }
 
-    private void drawResistor(GraphicsContext gc, GraphicNode a, GraphicNode b) {
+    private void drawResistor(GraphicsContext gc,GraphicMode mode ,GraphicNode a, GraphicNode b) {
         double ax = a.getX();
         double ay = a.getY();
         double bx = b.getX();
@@ -89,13 +90,34 @@ public class GraphicResistor extends GraphicComponent{
             colorB = Color.LIGHTGREEN;
         }
 
+        Paint paintA = Color.BLACK;
+        Paint paintB = Color.BLACK;
+        Paint paintC = Color.BLACK;
+
+        switch (mode){
+            case NORMAL -> {
+                paintA = new LinearGradient(ax,ay,x1,y1,false, CycleMethod.NO_CYCLE,new Stop(0,colorA),new Stop(2, Color.BLACK));
+                paintB = new LinearGradient(bx,by,x2,y2,false, CycleMethod.NO_CYCLE,new Stop(0,colorB),new Stop(2,Color.BLACK));
+            }
+            case PREVIEW -> {
+                paintA = Color.GRAY;
+                paintB = Color.GRAY;
+                paintC = Color.GRAY;
+            }
+            case SELECTED -> {
+                paintA = Color.RED;
+                paintB = Color.RED;
+                paintC = Color.RED;
+            }
+        }
+
         // Leads
-        gc.setStroke(new LinearGradient(ax,ay,x1,y1,false, CycleMethod.NO_CYCLE,new Stop(0,colorA),new Stop(2,Color.BLACK)));
+        gc.setStroke(paintA);
         gc.strokeLine(ax, ay, x1, y1);
-        gc.setStroke(new LinearGradient(bx,by,x2,y2,false, CycleMethod.NO_CYCLE,new Stop(0,colorB),new Stop(2,Color.BLACK)));
+        gc.setStroke(paintB);
         gc.strokeLine(x2, y2, bx, by);
 
-        gc.setStroke(Color.BLACK);
+        gc.setStroke(paintC);
         // Zigzag
         int segments = 6;
 

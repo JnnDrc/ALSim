@@ -9,18 +9,21 @@ import net.pimenta.alsim.gui.elements.GraphicNode;
 public class SimulationState {
     private SimulationResults results = null;
     private boolean dirty = true;
+    private boolean live = false;
     private double  time = 0;
 
     public void simulate(CircuitEditor editor){
         Simulator simulator = new Simulator();
         try {
             SimulationResults newResults = simulator.simulate(editor);
-            results = newResults;
+            if(newResults != null) results = newResults;
             dirty = false;
             time = 0;
         }
         catch (Exception e){
+            dirty = true;
             System.err.println("Failed to simulate: " + e.getMessage());
+            return;
         }
 
         for(GraphicComponent component : editor.getComponents()) {
@@ -60,4 +63,11 @@ public class SimulationState {
         dirty = true;
     }
 
+    public boolean isLive() {
+        return live;
+    }
+
+    public void setLive(boolean live) {
+        this.live = live;
+    }
 }

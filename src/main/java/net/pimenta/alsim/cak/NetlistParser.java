@@ -1,5 +1,7 @@
 package net.pimenta.alsim.cak;
 
+import net.pimenta.alsim.util.Misc;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -31,13 +33,13 @@ public class NetlistParser {
                 case 'R':
                     int a = Integer.parseInt(tokens[1]);
                     int b = Integer.parseInt(tokens[2]);
-                    double R = parseValue(tokens[3]);
+                    double R = Misc.parseValue(tokens[3]);
                     circuit.add(new Resistor(id,new Node(a),new Node(b),R));
                     break;
                 case 'V':
                     int pos = Integer.parseInt(tokens[1]);
                     int neg = Integer.parseInt(tokens[2]);
-                    double V = parseValue(tokens[3]);
+                    double V = Misc.parseValue(tokens[3]);
                     circuit.add(new VSource(id,new Node(pos),new Node(neg),V));
                     break;
                 default:
@@ -56,17 +58,5 @@ public class NetlistParser {
         return parse(new StringReader(string));
     }
 
-    private static double parseValue(String text){
-        char suffix = text.charAt(text.length()-1);
-        String withoutLast = new StringBuilder(text).deleteCharAt(text.length() - 1).toString();
 
-        return switch (suffix) {
-            case 'k' -> Double.parseDouble(withoutLast) * 1e3;
-            case 'm' -> Double.parseDouble(withoutLast) * 1e-3;
-            case 'u' -> Double.parseDouble(withoutLast) * 1e-6;
-            case 'n' -> Double.parseDouble(withoutLast) * 1e-9;
-            case 'p' -> Double.parseDouble(withoutLast) * 1e-12;
-            default -> Double.parseDouble(text);
-        };
-    }
 }

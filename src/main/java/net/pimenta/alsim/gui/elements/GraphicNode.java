@@ -35,7 +35,7 @@ public class GraphicNode extends GraphicElement{
     }
 
     @Override
-    public void draw(GraphicsContext gc){
+    public void draw(GraphicsContext gc, GraphicMode mode){
         gc.fillOval(x - RADIUS/2,y - RADIUS/2,RADIUS,RADIUS);
     }
     @Override

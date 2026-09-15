@@ -1,36 +1,37 @@
 package net.pimenta.alsim.gui.tools;
 
+import javafx.geometry.Point2D;
 import javafx.scene.input.MouseButton;
 import net.pimenta.alsim.gui.CircuitEditor;
 import net.pimenta.alsim.gui.elements.GraphicNode;
-import net.pimenta.alsim.gui.elements.GraphicVSource;
+import net.pimenta.alsim.gui.elements.GraphicProbe;
 import net.pimenta.alsim.gui.elements.GraphicWire;
 
-public class WireTool implements Tool {
-    private GraphicNode first;
+public class ProbeTool implements Tool {
+    private GraphicNode node;
+    private int probeCount = 1;
 
     @Override
-    public void mouseClicked(CircuitEditor editor,MouseButton button, int clickCount, double x, double y) {
-        GraphicNode node = editor.findOrCreateNode(x,y);
-        if (first == null) first = node;
-        else{
-            editor.addNode(first);
-            editor.addNode(node);
-            editor.addWire(new GraphicWire(editor.nextWire(),first,node));
-            first = null;
+    public void mouseClicked(CircuitEditor editor, MouseButton button, int clickCount, double x, double y) {
+        GraphicNode newNode = editor.findOrCreateNode(x,y);
+        if(this.node == null) this.node = newNode;
+        else {
+            editor.addNode(this.node);
+            editor.addProbe(new GraphicProbe("M" + probeCount++,this.node,new Point2D(x,y)));
+            this.node = null;
             editor.clearPreview();
         }
     }
 
     @Override
     public void mouseMoved(CircuitEditor editor, double x, double y) {
-        if(first == null){
+        if(node == null){
             return;
         }
 
-        GraphicNode cursor = new GraphicNode(-1, x, y);
+        Point2D cursor = new Point2D(x, y);
 
-        editor.setPreview(new GraphicWire(-1,first, cursor));
+        editor.setPreview(new GraphicProbe("__PROBE_PREVIEW__",node, cursor));
     }
 
     @Override
@@ -40,7 +41,7 @@ public class WireTool implements Tool {
 
     @Override
     public void cancel(CircuitEditor editor) {
-        first = null;
+        node = null;
         editor.clearPreview();
     }
 

@@ -1,10 +1,7 @@
 package net.pimenta.alsim.gui.elements;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
+import javafx.scene.paint.*;
 import net.pimenta.alsim.gui.simulate.NodeResult;
 import net.pimenta.alsim.util.Misc;
 
@@ -13,6 +10,10 @@ public class GraphicVSource extends GraphicComponent{
     private static final double MIN_SIZE = 5;
 
     double V = 12;
+    public GraphicVSource(String id, GraphicNode neg, GraphicNode pos, double V) {
+        super(id, neg,pos);
+        this.V = V;
+    }
 
     public GraphicVSource(String id, GraphicNode neg, GraphicNode pos) {
         super(id, neg,pos);
@@ -26,14 +27,14 @@ public class GraphicVSource extends GraphicComponent{
     }
 
     @Override
-    public void draw(GraphicsContext gc) {
+    public void draw(GraphicsContext gc, GraphicMode mode) {
         GraphicNode a = nodes.get(0);
         GraphicNode b = nodes.get(1);
 
-        drawVSource(gc, a, b);
+        drawVSource(gc, mode, a, b);
     }
 
-    private void drawVSource(GraphicsContext gc, GraphicNode a, GraphicNode b) {
+    private void drawVSource(GraphicsContext gc, GraphicMode mode, GraphicNode a, GraphicNode b) {
         double ax = a.getX();
         double ay = a.getY();
         double bx = b.getX();
@@ -83,10 +84,31 @@ public class GraphicVSource extends GraphicComponent{
             colorB = Color.LIGHTGREEN;
         }
 
+        Paint paintA = Color.BLACK;
+        Paint paintB = Color.BLACK;
+        Paint paintC = Color.BLACK;
+
+        switch (mode){
+            case NORMAL -> {
+                paintA = new LinearGradient(ax,ay,x1,y1,false, CycleMethod.NO_CYCLE,new Stop(0,colorA),new Stop(2, Color.BLACK));
+                paintB = new LinearGradient(bx,by,x2,y2,false, CycleMethod.NO_CYCLE,new Stop(0,colorB),new Stop(2,Color.BLACK));
+            }
+            case PREVIEW -> {
+                paintA = Color.GRAY;
+                paintB = Color.GRAY;
+                paintC = Color.GRAY;
+            }
+            case SELECTED -> {
+                paintA = Color.RED;
+                paintB = Color.RED;
+                paintC = Color.RED;
+            }
+        }
+
         // Leads
-        gc.setStroke(new LinearGradient(ax,ay,x1,y1,false, CycleMethod.NO_CYCLE,new Stop(0,colorA),new Stop(2, Color.BLACK)));
+        gc.setStroke(paintA);
         gc.strokeLine(ax, ay, x1, y1);
-        gc.setStroke(new LinearGradient(bx,by,x2,y2,false, CycleMethod.NO_CYCLE,new Stop(0,colorB),new Stop(2,Color.BLACK)));
+        gc.setStroke(paintB);
         gc.strokeLine(x2, y2, bx, by);
 
         // plates
@@ -105,6 +127,7 @@ public class GraphicVSource extends GraphicComponent{
         gc.strokeLine(ax, ay, p1x, p1y);
         gc.strokeLine(p2x, p2y, bx, by);
 
+        gc.setStroke(paintC);
         // Negative/short plate (A side)
         gc.strokeLine(
                 p1x - px * minorPlate / 2,
