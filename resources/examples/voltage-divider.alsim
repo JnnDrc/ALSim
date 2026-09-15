@@ -1,0 +1,27 @@
+* Al.Sim circuit simulator file !
+.version 1
+
+.name "Voltage divider"
+
+.desc
+Simple voltage divider
+Divisor de tensão simples
+
+.cam 0.0 0.0 1.0
+
+.nodes
+0 600.0 600.0
+1 600.0 400.0
+2 800.0 400.0
+3 800.0 500.0
+4 800.0 600.0
+
+.comps
+V1 0 1 15.0
+R1 2 3 250.0
+R2 3 4 350.0
+
+.wires
+0 1 2
+1 0 4
+.end
