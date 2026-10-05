@@ -1,6 +1,8 @@
 package net.pimenta.alsim.cak;
 
 import net.pimenta.alsim.util.*;
+import net.pimenta.alsim.util.Solver.GaussianSolver;
+import net.pimenta.alsim.util.Solver.LinearSolver;
 
 public class MNA {
     private final Matrix A;

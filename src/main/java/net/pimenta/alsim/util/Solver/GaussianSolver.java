@@ -1,4 +1,7 @@
-package net.pimenta.alsim.util;
+package net.pimenta.alsim.util.Solver;
+
+import net.pimenta.alsim.util.Matrix;
+import net.pimenta.alsim.util.Vector;
 
 public class GaussianSolver implements LinearSolver{
     public static final double EPS = 1e-12;

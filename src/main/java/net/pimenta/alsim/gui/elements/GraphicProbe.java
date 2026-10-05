@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.TextAlignment;
 import net.pimenta.alsim.gui.simulate.NodeResult;
+import net.pimenta.alsim.util.Engineering;
 
 
 public class GraphicProbe extends GraphicElement{
@@ -74,10 +75,10 @@ public class GraphicProbe extends GraphicElement{
         NodeResult result = node.getResult();
         if(result != null){
             if(this.mode == ProbeMode.VOLTAGE){
-                data = result.getVoltage() + "V";
+                data = Engineering.format(result.getVoltage(), "V");
             }
             else if(this.mode == ProbeMode.CURRENT){
-                data = result.getCurrent() + "A";
+                data = Engineering.format(result.getCurrent(),"A");
             }
         }
 

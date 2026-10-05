@@ -1,4 +1,7 @@
-package net.pimenta.alsim.util;
+package net.pimenta.alsim.util.Solver;
+
+import net.pimenta.alsim.util.Matrix;
+import net.pimenta.alsim.util.Vector;
 
 public class GaussSeidelSolver implements LinearSolver {
     private final double tolerance;

@@ -1,5 +1,7 @@
 package net.pimenta.alsim.util;
 
+import net.pimenta.alsim.util.Solver.GaussJordanSolver;
+
 public class Solving {
 
     public static void main(String[] args) {
