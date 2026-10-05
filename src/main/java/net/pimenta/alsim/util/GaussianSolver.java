@@ -1,10 +1,10 @@
 package net.pimenta.alsim.util;
 
-public class GaussJordanSolver implements LinearSolver{
+public class GaussianSolver implements LinearSolver{
     public static final double EPS = 1e-12;
 
     @Override
-    public Vector solve(Matrix A, Vector b) throws IllegalArgumentException {
+    public Vector solve(Matrix A, Vector b) {
         if(A.rows() != A.cols() || b.size() != A.rows()) throw new IllegalArgumentException("Invalid system dimensions");
         int n = A.rows();
 
@@ -30,21 +30,25 @@ public class GaussJordanSolver implements LinearSolver{
                 b.swap(pivot,k);
             }
 
-
-            // normalize ----
-            double pivotValue = A.get(k,k);
-            A.scaleRow(k,1.0/pivotValue);
-            b.scale(k,1.0/pivotValue);
-
-            // eliminate ---
-            for(int i = 0; i < n; i++){
-                if (i == k) continue;
-                double factor = A.get(i,k);
+            // eliminate ----
+            for(int i = k + 1; i < n; i++){
+                double factor = A.get(i,k) / A.get(k,k);
+                A.set(i,k,0);
                 A.addRows(i,k,-factor);
                 b.add(i,k,-factor);
             }
         }
 
-        return b;
+        Vector x = new Vector(b.size());
+        for(int i = n - 1; i >= 0; i--){
+            double sum = b.get(i);
+            for(int j = i + 1; j < n; j++){
+                sum -= A.get(i,j)*x.get(j);
+            }
+            if(Math.abs(A.get(i,i)) < EPS) throw new IllegalArgumentException("Singular matrix");
+            x.set(i,sum/A.get(i,i));
+        }
+
+        return x;
     }
 }

@@ -3,6 +3,7 @@ package net.pimenta.alsim.gui.elements;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.*;
 import net.pimenta.alsim.gui.simulate.NodeResult;
+import net.pimenta.alsim.util.Engineering;
 import net.pimenta.alsim.util.Misc;
 
 public class GraphicVSource extends GraphicComponent{
@@ -143,6 +144,38 @@ public class GraphicVSource extends GraphicComponent{
                 p2x + px * longPlate / 2,
                 p2y + py * longPlate / 2
         );
+
+        // text
+        double cx = (x1 + x2) / 2;
+        double cy = (y1 + y2) / 2;
+        drawVSourceText(gc,mode,getId(), Engineering.format(getV(),"V"),cx,cy,ux,uy);
+    }
+
+    private void drawVSourceText(GraphicsContext gc, GraphicMode mode, String label, String value,
+                                  double cx, double cy, double ux, double uy) {
+        if (mode == GraphicMode.PREVIEW)
+            return;
+
+        double theta = Math.toDegrees(Math.atan2(uy, ux));
+
+        // Keep text upright.
+        if (theta> 90 || theta < -90) {
+            theta += 180;
+        }
+
+        gc.save();
+
+        gc.translate(cx, cy);
+        gc.rotate(theta);
+
+        gc.setFill(Color.BLACK);
+        gc.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
+        gc.setTextBaseline(javafx.geometry.VPos.CENTER);
+
+        gc.fillText(label, 0, -25);
+        gc.fillText(value, 0, 25);
+
+        gc.restore();
     }
 
     public double getV() {

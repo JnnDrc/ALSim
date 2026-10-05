@@ -1,9 +1,9 @@
 package net.pimenta.alsim.gui.elements;
 
-import javafx.scene.Node;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.*;
 import net.pimenta.alsim.gui.simulate.NodeResult;
+import net.pimenta.alsim.util.Engineering;
 import net.pimenta.alsim.util.Misc;
 
 public class GraphicResistor extends GraphicComponent{
@@ -148,6 +148,38 @@ public class GraphicResistor extends GraphicComponent{
             lastX = x;
             lastY = y;
         }
+
+        // text
+        double cx = (x1 + x2) / 2;
+        double cy = (y1 + y2) / 2;
+        drawResistorText(gc,mode,getId(), Engineering.format(getR(),"R"),cx,cy,ux,uy);
+    }
+
+    private void drawResistorText(GraphicsContext gc, GraphicMode mode, String label, String value,
+                                  double cx, double cy, double ux, double uy) {
+        if (mode == GraphicMode.PREVIEW)
+            return;
+
+        double theta = Math.toDegrees(Math.atan2(uy, ux));
+
+        // Keep text upright.
+        if (theta> 90 || theta < -90) {
+            theta += 180;
+        }
+
+        gc.save();
+
+        gc.translate(cx, cy);
+        gc.rotate(theta);
+
+        gc.setFill(Color.BLACK);
+        gc.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
+        gc.setTextBaseline(javafx.geometry.VPos.CENTER);
+
+        gc.fillText(label, 0, -16);
+        gc.fillText(value, 0, 16);
+
+        gc.restore();
     }
 
     public double getR() {

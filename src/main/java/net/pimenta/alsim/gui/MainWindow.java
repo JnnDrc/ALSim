@@ -10,6 +10,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import net.pimenta.alsim.cak.Circuit;
 import net.pimenta.alsim.gui.elements.GraphicComponent;
 import net.pimenta.alsim.gui.ui.CircuitPropertiesDialog;
 import net.pimenta.alsim.gui.ui.PropertiesDialog;
@@ -31,12 +32,13 @@ public class MainWindow {
 
         StackPane canvasArea = new StackPane(canvas,infoPanel);
 
-        int blankTab = canvas.newCircuit();
+        CircuitContext context = newContext();
+
         Tab tab = new Tab("Untitled");
-        tab.setUserData(tab);
+        tab.setUserData(context);
         tabs.getTabs().add(tab);
         tabs.getSelectionModel().select(tab);
-        canvas.setActive(blankTab);
+        canvas.setContext(context);
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         StackPane.setAlignment(infoPanel, Pos.BOTTOM_RIGHT);
@@ -50,9 +52,6 @@ public class MainWindow {
         canvas.heightProperty()
                 .addListener((obs,oldValue,newValue) -> canvas.draw());
 
-        canvas.getEditor()
-                .setPropertyEditor(element -> PropertiesDialog.show(element, getScene().getWindow()));
-
         MenuBar menuBar = createMenuBar(canvas);
 
 
@@ -63,8 +62,8 @@ public class MainWindow {
                 .addListener(
                         (observable, oldTab, newTab) -> {
                             if(newTab == null) return;
-                            int index = (int)newTab.getUserData();
-                            canvas.setActive(index);
+                            CircuitContext newContext = (CircuitContext) newTab.getUserData();
+                            canvas.setContext(newContext);
                             simulationLive.setSelected(canvas.getEditor().getSimulation().isLive());
                         });
 
@@ -89,14 +88,14 @@ public class MainWindow {
     }
 
     private void newCircuit(CircuitCanvas canvas) {
-        int index = canvas.newCircuit();
+        CircuitContext context = newContext();
 
         Tab tab = new Tab("Untitled");
-        tab.setUserData(index);
+        tab.setUserData(context);
 
         tabs.getTabs().add(tab);
         tabs.getSelectionModel().select(tab);
-        canvas.setActive(index);
+        canvas.setContext(context);
     }
 
     private void closeCircuit(CircuitCanvas canvas) {
@@ -104,24 +103,12 @@ public class MainWindow {
 
         if (tab == null) return;
 
-        int index = (int)tab.getUserData();
+        CircuitContext context = (CircuitContext) tab.getUserData();
 
-        canvas.closeCircuit(index);
         tabs.getTabs().remove(tab);
-
-        for (int i = 0; i < tabs.getTabs().size(); i++) {
-            tabs.getTabs().get(i).setUserData(i);
-        }
 
         if (tabs.getTabs().isEmpty()) {
             newCircuit(canvas);
-        } else {
-            int newIndex = Math.min(
-                    index,
-                    tabs.getTabs().size() - 1
-            );
-
-            tabs.getSelectionModel().select(newIndex);
         }
     }
 
@@ -162,23 +149,22 @@ public class MainWindow {
         File openFile = chooser.showOpenDialog(scene.getWindow());
         if(openFile == null) return;
 
-        int index = canvas.newCircuit();
-        canvas.setActive(index);
+        CircuitContext context = newContext();
 
         try {
-            CircuitLoader.openCircuit(canvas.getEditor(),canvas.getViewport(),openFile.toPath());
+            CircuitLoader.openCircuit(context.getEditor(),context.getViewport(),openFile.toPath());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-
-        canvas.getEditor().setCircuitPath(openFile.toPath());
-
-        String circuitName = canvas.getEditor().getCircuitName();
+        context.getEditor().setCircuitPath(openFile.toPath());
+        String circuitName = context.getEditor().getCircuitName();
         if(circuitName.equals("noname")) circuitName = "Untitled";
+
         Tab tab = new Tab(circuitName);
-        tab.setUserData(index);
+        tab.setUserData(context);
         tabs.getTabs().add(tab);
         tabs.getSelectionModel().select(tab);
+        canvas.setContext(context);
     }
 
     private MenuBar createMenuBar(CircuitCanvas canvas){
@@ -230,7 +216,10 @@ public class MainWindow {
 
         Menu simulation = new Menu("Simulation");
         MenuItem simulationSimulate = new MenuItem("Simulate (F1)");
-        simulationSimulate.setOnAction(e -> canvas.getEditor().simulate());
+        simulationSimulate.setOnAction(e -> {
+            canvas.getEditor().simulate();
+            canvas.draw();
+        });
         simulationLive = new CheckMenuItem("Live refresh");
         simulationLive.setOnAction(e -> {
             boolean enabled = simulationLive.isSelected();
@@ -243,4 +232,14 @@ public class MainWindow {
         return menuBar  ;
     }
 
+    private CircuitContext newContext() {
+        CircuitContext context = new CircuitContext();
+        context.getEditor().setPropertyEditor(
+                element -> PropertiesDialog.show(
+                        element,
+                        scene.getWindow()
+                )
+        );
+        return context;
+    }
 }

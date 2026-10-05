@@ -18,13 +18,10 @@ import net.pimenta.alsim.gui.elements.GraphicElement;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class CircuitCanvas extends Canvas {
-    private final List<CircuitContext> circuits = new ArrayList<>();
-    private int activeCircuit = -1;
+    private CircuitContext context;
 
     private double panStartX;
     private double panStartY;
@@ -144,7 +141,10 @@ public class CircuitCanvas extends Canvas {
             case F -> getEditor().swapNodesOfSelected();
             case S -> getEditor().rotateSelectedCW();
             case D -> getEditor().rotateSelectedCCW();
-            case F1 -> getEditor().simulate();
+            case F1 -> {
+                getEditor().simulate();
+                draw();
+            }
             case F2 -> {
                 try{
                     NetlistGenerator.generate(getEditor(), Path.of("netlist.ckt"));
@@ -219,7 +219,7 @@ public class CircuitCanvas extends Canvas {
         ContextMenu menu = new ContextMenu();
 
         if(ge instanceof GraphicComponent){
-            MenuItem properties = new MenuItem("Properties (Double click)");
+            MenuItem properties = new MenuItem("Properties");
             MenuItem rotateCW   = new MenuItem("Rotate CW  (S)");
             MenuItem rotateCCW  = new MenuItem("Rotate CCW (D)");
             MenuItem permute    = new MenuItem("Permute (F)");
@@ -269,43 +269,21 @@ public class CircuitCanvas extends Canvas {
     }
 
     public Viewport getViewport() {
-        return circuits.get(activeCircuit).getViewport();
+        return context.getViewport();
     }
     public CircuitEditor getEditor() {
-        return circuits.get(activeCircuit).getEditor();
+        return context.getEditor();
     }
-    public CircuitContext getActiveCircuit(){
-        return circuits.get(activeCircuit);
+    public CircuitContext getContext(){
+        return context;
     }
-    public void setActive(int index) {
-        if (index < 0 || index >= circuits.size())
-            throw new IndexOutOfBoundsException(index);
-
-        activeCircuit = index;
+    public void setContext(CircuitContext context) {
+        this.context = context;
         draw();
     }
-    public int getActive(){
-        return activeCircuit;
-    }
-    public int getCircuitCount() {
-        return circuits.size();
-    }
 
-    public int newCircuit(){
-        circuits.add(new CircuitContext());
-        return circuits.size() - 1;
-    }
-    public void closeCircuit(int index){
-        circuits.remove(index);
-    }
-
-    public void setGrid(boolean grid) {
-        this.grid = grid;
-    }
-    public boolean getGrid(){
-        return grid;
-    }
     public void toggleGrid(){
         grid = !grid;
+        draw();
     }
 }

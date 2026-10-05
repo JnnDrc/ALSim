@@ -1,9 +1,6 @@
 package net.pimenta.alsim.cak;
 
-import net.pimenta.alsim.util.GaussJordanSolver;
-import net.pimenta.alsim.util.LinearSolver;
-import net.pimenta.alsim.util.Matrix;
-import net.pimenta.alsim.util.Vector;
+import net.pimenta.alsim.util.*;
 
 public class MNA {
     private final Matrix A;
@@ -15,7 +12,7 @@ public class MNA {
     private final int extraVars;
 
     public MNA(Circuit circuit){
-       this(circuit,new GaussJordanSolver());
+       this(circuit,new GaussianSolver());
     }
 
     public MNA(Circuit circuit, LinearSolver solver){

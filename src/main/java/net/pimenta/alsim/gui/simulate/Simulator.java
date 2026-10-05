@@ -46,6 +46,10 @@ public class Simulator {
         for(Component component : circuit.getComponents()){
             switch (component){
                 case Resistor resistor -> {
+                    String id = resistor.getId();
+                    if(id.startsWith("R"))
+                        id = id.substring(1);
+
                     Node a = resistor.getNodes().get(0);
                     Node b = resistor.getNodes().get(1);
 
@@ -55,14 +59,31 @@ public class Simulator {
                     double R = resistor.getR();
 
                     double I = (Ua - Ub) / R;
-                    double V = I * R;
-                    results.addComponentResult(resistor.getId(),new ComponentResult(V,I,V*I,R));
+                    double V = (Ua - Ub);
+                    double W = V*I;
+
+                    System.out.printf(
+                            "%s: nodes=%d,%d  U=%f,%f  R=%f  I=%f mA%n",
+                            resistor.getId(),
+                            a.getId(),
+                            b.getId(),
+                            Ua,
+                            Ub,
+                            R,
+                            I * 1000
+                    );
+
+                    results.addComponentResult(id,new ComponentResult(V,I,W,R));
                 }
                 case VSource vSource ->{
+                    String id = vSource.getId();
+                    if(id.startsWith("V"))
+                        id = id.substring(1);
+
                     double V = vSource.getV();
                     double I = mna.solve().get(mna.extraIndex(vSource.getIndex()));
-
-                    results.addComponentResult(vSource.getId(),new ComponentResult(V,I,V*I,0));
+                    double W = V*I;
+                    results.addComponentResult(id,new ComponentResult(V,I,W,0));
                 }
                 default -> {
                     System.out.println("[ERROR]::UNK");

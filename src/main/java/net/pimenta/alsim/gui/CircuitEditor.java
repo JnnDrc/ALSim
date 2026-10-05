@@ -30,7 +30,7 @@ public class CircuitEditor {
     private final List<GraphicProbe>     probes     = new ArrayList<>();
     private GraphicElement preview;
     private final List<GraphicElement> selected = new ArrayList<>();
-    private Tool tool = resistorTool;
+    private Tool tool = selectTool;
 
     private final SimulationState simulation = new SimulationState();
 

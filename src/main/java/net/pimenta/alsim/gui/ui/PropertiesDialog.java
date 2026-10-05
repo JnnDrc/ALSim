@@ -9,6 +9,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import net.pimenta.alsim.gui.elements.*;
+import net.pimenta.alsim.util.Engineering;
 
 public class PropertiesDialog {
 
@@ -83,7 +84,7 @@ public class PropertiesDialog {
         cancelButton.setOnAction(event -> stage.close());
         applyButton.setOnAction(event -> {
             try{
-                double value = Double.parseDouble(resistanceField.getText());
+                double value = Engineering.parse(resistanceField.getText());
                 String id    = idField.getText();
                 resistor.setR(value);
                 resistor.setId(id);
@@ -131,7 +132,7 @@ public class PropertiesDialog {
         cancelButton.setOnAction(event -> stage.close());
         applyButton.setOnAction(event -> {
             try{
-                double value = Double.parseDouble(voltageField.getText());
+                double value = Engineering.parse(voltageField.getText());
                 vsource.setV(value);
                 stage.close();
             }catch (NumberFormatException e){

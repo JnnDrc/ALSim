@@ -8,6 +8,7 @@ import net.pimenta.alsim.gui.elements.GraphicComponent;
 import net.pimenta.alsim.gui.elements.GraphicNode;
 import net.pimenta.alsim.gui.simulate.ComponentResult;
 import net.pimenta.alsim.gui.simulate.NodeResult;
+import net.pimenta.alsim.util.Engineering;
 
 
 public class SimulationInfoPanel extends VBox {
@@ -40,10 +41,10 @@ public class SimulationInfoPanel extends VBox {
         title.setText(component.getId());
 
         // example
-        line1.setText("R = " + result.getResistance());
-        line2.setText("V = " + result.getVoltage());
-        line3.setText("I = " + result.getCurrent());
-        line4.setText("P = " + result.getPower());
+        line1.setText("R = " + Engineering.format(result.getResistance(),"R"));
+        line2.setText("V = " + Engineering.format(result.getVoltage(),"V"));
+        line3.setText("I = " + Engineering.format(result.getCurrent(),"A"));
+        line4.setText("P = " + Engineering.format(result.getPower(),"W"));
 
         setVisible(true);
     }
